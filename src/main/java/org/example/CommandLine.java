@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class CommandLine {
     private static CommandLine instance;
-    private Scanner scanner;
+    private final Scanner scanner;
 
     private CommandLine() {
         this.scanner = new Scanner(System.in);

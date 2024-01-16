@@ -6,8 +6,7 @@ import org.example.player.PlayerRegistary;
 import java.util.Map;
 
 public class Game {
-    private int playerCount;
-    private Map<Integer, String> idToName;
+    private boolean running;
 
     IPlayerRegistary playerRegistary;
     CardTracker cardTracker;
@@ -17,15 +16,13 @@ public class Game {
         this.commandLine = CommandLine.getInstance();
         this.playerRegistary = new PlayerRegistary();
         this.cardTracker = new CardTracker(playerRegistary);
-
-        init();
-    }
-
-    private void init() {
+        this.running = true;
     }
 
     public void start() {
-        //Game loop
+        while (running) {
+            
+        }
     }
 
 }
