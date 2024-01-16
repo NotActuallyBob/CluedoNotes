@@ -1,6 +1,6 @@
 package org.example;
 
-import org.example.player.IPlayerRegistary;
+import org.example.player.IPlayerRegister;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.util.*;
 
 public class CardTracker implements ICardTracker {
     Map<Integer, Integer> idToCardCount;
-    private final IPlayerRegistary playerRegistary;
+    private final IPlayerRegister playerRegistary;
     private Set<String> allCards;
     private Set<String> allRoomCards;
     private Set<String> allWeaponCards;
@@ -23,7 +23,7 @@ public class CardTracker implements ICardTracker {
 
     private final CommandLine commandLine;
 
-    public CardTracker (IPlayerRegistary playerRegistary) {
+    public CardTracker (IPlayerRegister playerRegistary) {
         this.playerRegistary = playerRegistary;
         this.commandLine = CommandLine.getInstance();
 
@@ -51,10 +51,10 @@ public class CardTracker implements ICardTracker {
 
         initPlayerCardCounts();
         initTableCards();
+        initPlayerCards();
         initOwnCards();
         initPossibleCards();
         initPossibleShows();
-        initPlayerCards();
     }
 
 
@@ -107,6 +107,7 @@ public class CardTracker implements ICardTracker {
         String line = reader.readLine();
 
         while (line != null) {
+            line = line.toLowerCase();
             allCards.add(line);
             map.add(line);
             line = reader.readLine();
@@ -178,12 +179,14 @@ public class CardTracker implements ICardTracker {
     }
 
     private void addKnownCardToPlayer(int playerId, String card) {
-        Set<Set<String>> playerShows = playerIdToShows.get(playerId);
-        Iterator<Set<String>> iterator = playerShows.iterator();
-        while(iterator.hasNext()) {
-            Set<String> next = iterator.next();
-            if(next.contains(card)) {
-                playerShows.remove(next);
+        Set<Set<String>> setOfPlayerShows = playerIdToShows.get(playerId);
+        if(setOfPlayerShows != null) {
+            Iterator<Set<String>> iterator = setOfPlayerShows.iterator();
+            while(iterator.hasNext()) {
+                Set<String> next = iterator.next();
+                if(next.contains(card)) {
+                    setOfPlayerShows.remove(next);
+                }
             }
         }
 
@@ -197,5 +200,13 @@ public class CardTracker implements ICardTracker {
         }
 
         playerIdToCards.get(playerId).add(card);
+    }
+
+    public void printKnownCardsByPlayerId(int playerId) {
+        Set<String> cards = playerIdToCards.get(playerId);
+        System.out.println(playerRegistary.getPlayerName(playerId) + ":");
+        for (String card : cards) {
+            System.out.println("   " + card);
+        }
     }
 }

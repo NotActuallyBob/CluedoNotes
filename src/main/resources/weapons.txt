@@ -5,3 +5,5 @@ Kirves
 Myrkky
 Pokaali
 Käsipaino
+Pistooli
+Köysi

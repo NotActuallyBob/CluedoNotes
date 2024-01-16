@@ -1,7 +1,8 @@
 package org.example;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.example.command.ICommand;
+import org.example.command.commands.*;
+
 import java.util.Scanner;
 
 public class CommandLine {
@@ -31,10 +32,32 @@ public class CommandLine {
         printPrompt(prompt);
 
         String countString = scanner.nextLine();
+        countString = countString.toLowerCase();
         return countString;
     }
 
     public void printPrompt(String prompt) {
         System.out.print("Enter " + prompt + ": ");
+    }
+
+    public ICommand promptCommand() {
+        String commandString = promptForString("command");
+        return switchCommandString(commandString);
+    }
+
+    private ICommand promptCommandAgain() {
+        String commandString = promptForString("command (The previous command did not exist)");
+        return switchCommandString(commandString);
+    }
+
+    private ICommand switchCommandString(String commandString) {
+        return switch (commandString) {
+            case "list_players" -> new ListPlayersCommand();
+            case "list_cards" -> new ListKnownCards();
+            case "seen" -> new SeenCardCommand();
+            case "showed" -> new ShowedCardCommand();
+            case "skipped" -> new SkippedCommand();
+            default -> promptCommandAgain();
+        };
     }
 }

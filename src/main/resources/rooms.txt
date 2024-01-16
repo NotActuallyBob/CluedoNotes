@@ -1,6 +1,8 @@
 Patio
 Keittö
-Vierashuone
+Vierastalo
 Aula
 Teaatteri
 Kylpylä
+Olohuone
+Ruokasali
