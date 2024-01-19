@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.cards.CardTracker;
+import org.example.cards.ICardTracker;
 import org.example.command.ICommand;
 import org.example.player.IPlayerRegister;
 import org.example.player.PlayerRegister;
@@ -47,18 +49,16 @@ public class Game {
 
     public void showedCard() {
         String playerName = commandLine.promptForString("showing player name");
-        String suspectName = commandLine.promptForString("suspect name");
-        String roomName = commandLine.promptForString("room name");
-        String weaponName = commandLine.promptForString("weapon name");
-        cardTracker.playerShowed(playerRegistary.getPlayerId(playerName), suspectName, roomName, weaponName);
+        Accusation accusation = commandLine.promptForAccustation();
+
+        cardTracker.playerShowed(playerRegistary.getPlayerId(playerName), accusation);
     }
 
     public void skipped() {
         String playerName = commandLine.promptForString("skipping player name");
-        String suspectName = commandLine.promptForString("suspect name");
-        String roomName = commandLine.promptForString("room name");
-        String weaponName = commandLine.promptForString("weapon name");
-        cardTracker.playerSkipped(playerRegistary.getPlayerId(playerName), suspectName, roomName, weaponName);
+        Accusation accusation = commandLine.promptForAccustation();
+
+        cardTracker.playerSkipped(playerRegistary.getPlayerId(playerName), accusation);
     }
 
     public void listKnownCards() {

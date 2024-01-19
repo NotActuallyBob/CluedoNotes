@@ -36,6 +36,13 @@ public class CommandLine {
         return countString;
     }
 
+    public Accusation promptForAccustation() {
+        String suspectCard = promptForString("suspect");
+        String roomCard = promptForString("room");
+        String weapon = promptForString("weapon");
+        return new Accusation(suspectCard, roomCard, weapon);
+    }
+
     public void printPrompt(String prompt) {
         System.out.print("Enter " + prompt + ": ");
     }

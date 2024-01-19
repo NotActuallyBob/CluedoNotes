@@ -1,5 +1,7 @@
-package org.example;
+package org.example.cards;
 
+import org.example.Accusation;
+import org.example.CommandLine;
 import org.example.player.IPlayerRegister;
 
 import java.io.BufferedReader;
@@ -9,7 +11,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class CardTracker implements ICardTracker {
-    Map<Integer, Integer> idToCardCount;
+    Map<Integer, Integer> playerIdToCardCount;
     private final IPlayerRegister playerRegistary;
     private Set<String> allCards;
     private Set<String> allRoomCards;
@@ -41,9 +43,9 @@ public class CardTracker implements ICardTracker {
         this.playerIdToCards = new HashMap<>();
 
         try {
-            readCardType("/weapons.txt", allWeaponCards);
-            readCardType("/suspects.txt", allSuspectCards);
-            readCardType("/rooms.txt", allRoomCards);
+            readCardType("/en_weapons.txt", allWeaponCards);
+            readCardType("/en_suspects.txt", allSuspectCards);
+            readCardType("/en_rooms.txt", allRoomCards);
             int a= 1;
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,10 +61,10 @@ public class CardTracker implements ICardTracker {
 
 
     private void initPlayerCardCounts() {
-        idToCardCount = new HashMap<>();
+        playerIdToCardCount = new HashMap<>();
         for (int i = 1; i < playerRegistary.getPlayerCount(); i++) {
             int cardCount = commandLine.promptForInt("card count for player " + playerRegistary.getPlayerName(i));
-            idToCardCount.put(i, cardCount);
+            playerIdToCardCount.put(i, cardCount);
         }
     }
 
@@ -75,6 +77,8 @@ public class CardTracker implements ICardTracker {
 
     private void initOwnCards() {
         int ownCardCount = commandLine.promptForInt("own card count");
+        playerIdToCardCount.put(playerRegistary.getOwnId(), ownCardCount);
+
         for (int i = 0; i < ownCardCount; i++) {
             String cardName = commandLine.promptForString((i + 1) + " own card name");
             addKnownCardToPlayer(playerRegistary.getOwnId(), cardName);
@@ -86,7 +90,7 @@ public class CardTracker implements ICardTracker {
 
             possibleCards.removeAll(playerIdToCards.get(playerRegistary.getOwnId()));
             possibleCards.removeAll(tableCards);
-            playerIdToPossibleCards.put(i, possibleCards);
+            playerIdToPossibleCards.put(i, new HashSet<>(possibleCards));
         }
     }
 
@@ -95,6 +99,7 @@ public class CardTracker implements ICardTracker {
             playerIdToShows.put(i, new HashSet<>());
         }
     }
+
     private void initPlayerCards() {
         for (int i = 0; i < playerRegistary.getPlayerCount(); i++) {
             playerIdToCards.put(i, new HashSet<>());
@@ -125,22 +130,22 @@ public class CardTracker implements ICardTracker {
     }
 
     @Override
-    public void playerShowed(int playerId, String suspectCard, String roomCard, String weaponCard) {
+    public void playerShowed(int playerId, Accusation accusation) {
         Set<Set<String>> playerShows = playerIdToShows.get(playerId);
 
         Set<String> possibleCards = playerIdToPossibleCards.get(playerId);
         Set<String> newShow = new HashSet<>();
 
-        if(possibleCards.contains(suspectCard)) {
-            newShow.add(suspectCard);
+        if(possibleCards.contains(accusation.suspectCard())) {
+            newShow.add(accusation.suspectCard());
         }
 
-        if(possibleCards.contains(roomCard)) {
-            newShow.add(roomCard);
+        if(possibleCards.contains(accusation.roomCard())) {
+            newShow.add(accusation.roomCard());
         }
 
-        if(possibleCards.contains(weaponCard)) {
-            newShow.add(weaponCard);
+        if(possibleCards.contains(accusation.weaponCard())) {
+            newShow.add(accusation.weaponCard());
         }
 
         if(newShow.size() == 1) {
@@ -154,19 +159,19 @@ public class CardTracker implements ICardTracker {
     }
 
     @Override
-    public void playerSkipped(int playerId, String suspectCard, String roomCard, String weaponCard) {
+    public void playerSkipped(int playerId, Accusation accusation) {
         Set<String> playerPossibleCards = playerIdToPossibleCards.get(playerId);
-        playerPossibleCards.remove(suspectCard);
-        playerPossibleCards.remove(roomCard);
-        playerPossibleCards.remove(weaponCard);
+        playerPossibleCards.remove(accusation.suspectCard());
+        playerPossibleCards.remove(accusation.roomCard());
+        playerPossibleCards.remove(accusation.weaponCard());
 
         Set<Set<String>> playerShows = playerIdToShows.get(playerId);
         Set<String> newKnownCards = new HashSet<>();
 
         for(Set<String> possibleShownCards : playerShows) {
-            possibleShownCards.remove(suspectCard);
-            possibleShownCards.remove(roomCard);
-            possibleShownCards.remove(weaponCard);
+            possibleShownCards.remove(accusation.suspectCard());
+            possibleShownCards.remove(accusation.roomCard());
+            possibleShownCards.remove(accusation.weaponCard());
 
             if(possibleShownCards.size() == 1) {
                 newKnownCards.add(possibleShownCards.iterator().next());
@@ -191,15 +196,20 @@ public class CardTracker implements ICardTracker {
         }
 
         for (int i = 0; i < playerIdToPossibleCards.size(); i++) {
-            if(i == playerId) {
-                continue;
-            }
-
-            Set<String> possibleCards = playerIdToPossibleCards.get(i);
-            possibleCards.remove(card);
+            removeCardFromPlayersPossibleCards(i, card);
         }
 
         playerIdToCards.get(playerId).add(card);
+    }
+
+    private void removeCardFromPlayersPossibleCards(int playerId, String card) {
+        Set<String> possiblePlayerCards = playerIdToPossibleCards.get(playerId);
+        possiblePlayerCards.remove(card);
+        if(possiblePlayerCards.size() == playerIdToCardCount.get(playerId) - playerIdToCards.get(playerId).size()) {
+            for (String cardToAdd : possiblePlayerCards) {
+                addKnownCardToPlayer(playerId, cardToAdd);
+            }
+        }
     }
 
     public void printKnownCardsByPlayerId(int playerId) {
