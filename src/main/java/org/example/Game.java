@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.cards.CardTracker;
+import org.example.cards.Deck;
 import org.example.cards.ICardTracker;
 import org.example.command.ICommand;
 import org.example.player.IPlayerRegister;
@@ -8,6 +9,8 @@ import org.example.player.PlayerRegister;
 
 public class Game {
     private static Game instance;
+    private Deck deck;
+
     private boolean running;
 
     IPlayerRegister playerRegistary;
@@ -17,7 +20,8 @@ public class Game {
     private Game() {
         this.commandLine = CommandLine.getInstance();
         this.playerRegistary = new PlayerRegister();
-        this.cardTracker = new CardTracker(playerRegistary);
+        this.deck = new Deck();
+        this.cardTracker = new CardTracker(playerRegistary, deck);
         this.running = true;
     }
 

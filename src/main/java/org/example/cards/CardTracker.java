@@ -13,10 +13,8 @@ import java.util.*;
 public class CardTracker implements ICardTracker {
     Map<Integer, Integer> playerIdToCardCount;
     private final IPlayerRegister playerRegistary;
-    private Set<String> allCards;
-    private Set<String> allRoomCards;
-    private Set<String> allWeaponCards;
-    private Set<String> allSuspectCards;
+
+    private Deck deck;
 
     private Set<String> tableCards;
     private Map<Integer, Set<String>> playerIdToPossibleCards;
@@ -25,31 +23,20 @@ public class CardTracker implements ICardTracker {
 
     private final CommandLine commandLine;
 
-    public CardTracker (IPlayerRegister playerRegistary) {
+    public CardTracker (IPlayerRegister playerRegistary, Deck deck) {
         this.playerRegistary = playerRegistary;
         this.commandLine = CommandLine.getInstance();
+        this.deck = deck;
 
         init();
     }
 
     private void init() {
-        this.allCards = new HashSet<>();
-        this.allRoomCards = new HashSet<>();
-        this.allWeaponCards = new HashSet<>();
-        this.allSuspectCards = new HashSet<>();
+
         this.tableCards = new HashSet<>();
         this.playerIdToPossibleCards = new HashMap<>();
         this.playerIdToShows = new HashMap<>();
         this.playerIdToCards = new HashMap<>();
-
-        try {
-            readCardType("/en_weapons.txt", allWeaponCards);
-            readCardType("/en_suspects.txt", allSuspectCards);
-            readCardType("/en_rooms.txt", allRoomCards);
-            int a= 1;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         initPlayerCardCounts();
         initTableCards();
@@ -86,7 +73,7 @@ public class CardTracker implements ICardTracker {
     }
     private void initPossibleCards() {
         for (int i = 0; i < playerRegistary.getPlayerCount(); i++) {
-            Set<String> possibleCards = new HashSet<>(allCards);
+            Set<String> possibleCards = deck.getAllCards();
 
             possibleCards.removeAll(playerIdToCards.get(playerRegistary.getOwnId()));
             possibleCards.removeAll(tableCards);
@@ -104,24 +91,6 @@ public class CardTracker implements ICardTracker {
         for (int i = 0; i < playerRegistary.getPlayerCount(); i++) {
             playerIdToCards.put(i, new HashSet<>());
         }
-    }
-
-    private void readCardType(String path, Set<String> map) throws IOException {
-        InputStream is = getClass().getResourceAsStream(path);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        String line = reader.readLine();
-
-        while (line != null) {
-            line = line.toLowerCase();
-            allCards.add(line);
-            map.add(line);
-            line = reader.readLine();
-        }
-    }
-
-    @Override
-    public boolean cardExistsByName(String cardName) {
-        return allCards.contains(cardName);
     }
 
     @Override
