@@ -1,23 +1,21 @@
 package org.example;
 
+import org.example.cards.Card;
+import org.example.cards.CardType;
+import org.example.cards.Deck;
 import org.example.command.ICommand;
 import org.example.command.commands.*;
 
+import java.util.Optional;
 import java.util.Scanner;
 
 public class CommandLine {
-    private static CommandLine instance;
+    private final Deck deck;
     private final Scanner scanner;
 
-    private CommandLine() {
+    public CommandLine (Deck deck) {
         this.scanner = new Scanner(System.in);
-    }
-
-    public static CommandLine getInstance() {
-        if(instance == null) {
-            instance = new CommandLine();
-        }
-        return instance;
+        this.deck = deck;
     }
 
     public int promptForInt(String prompt) {
@@ -43,8 +41,37 @@ public class CommandLine {
         return new Accusation(suspectCard, roomCard, weapon);
     }
 
+    public Card promptForCard() {
+        while (true) {
+            String cardName = promptForString("card name");
+            Optional<Card> optionalCard = deck.getCardByName(cardName);
+            if(optionalCard.isPresent()) {
+                return optionalCard.get();
+            }
+        }
+    }
+
+    public Card promptForCard(CardType cardType) {
+        Card card = null;
+        while (card == null) {
+            String cardName = promptForString("card name");
+            if(deck.contains(cardName, cardType)) {
+                card = new Card(cardName, cardType);
+            }
+        }
+        return card;
+    }
+
     public void printPrompt(String prompt) {
-        System.out.print("Enter " + prompt + ": ");
+        print("Enter " + prompt + ": ");
+    }
+
+    public void print(String stringToPrint) {
+        System.out.print(stringToPrint);
+    }
+
+    public void println(String stringToPrint) {
+        System.out.println(stringToPrint);
     }
 
     public ICommand promptCommand() {
@@ -60,10 +87,6 @@ public class CommandLine {
     private ICommand switchCommandString(String commandString) {
         return switch (commandString) {
             case "list_players" -> new ListPlayersCommand();
-            case "list_cards" -> new ListKnownCards();
-            case "seen" -> new SeenCardCommand();
-            case "showed" -> new ShowedCardCommand();
-            case "skipped" -> new SkippedCommand();
             default -> promptCommandAgain();
         };
     }

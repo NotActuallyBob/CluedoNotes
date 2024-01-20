@@ -1,4 +1,4 @@
 package org.example;
 
-public record Accusation(String suspectCard, String roomCard, String weaponCard) {
+public record Accusation(String suspectCardName, String roomCardName, String weaponCardName) {
 }

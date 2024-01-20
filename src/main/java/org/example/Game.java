@@ -18,10 +18,10 @@ public class Game {
     private final CommandLine commandLine;
 
     private Game() {
-        this.commandLine = CommandLine.getInstance();
-        this.playerRegistary = new PlayerRegister();
         this.deck = new Deck();
-        this.cardTracker = new CardTracker(playerRegistary, deck);
+        this.commandLine = new CommandLine(deck);
+        this.playerRegistary = new PlayerRegister(commandLine);
+        this.cardTracker = new CardTracker(commandLine, playerRegistary, deck);
         this.running = true;
     }
 
@@ -42,32 +42,6 @@ public class Game {
     public void listAllPlayers() {
         for (int i = 0; i < playerRegistary.getPlayerCount(); i++) {
             System.out.println("[" + i + "] " + playerRegistary.getPlayerName(i));
-        }
-    }
-
-    public void seenCard() {
-        String playerName = commandLine.promptForString("showing player name");
-        String cardName = commandLine.promptForString("card name");
-        cardTracker.playerShowed(playerRegistary.getPlayerId(playerName), cardName);
-    }
-
-    public void showedCard() {
-        String playerName = commandLine.promptForString("showing player name");
-        Accusation accusation = commandLine.promptForAccustation();
-
-        cardTracker.playerShowed(playerRegistary.getPlayerId(playerName), accusation);
-    }
-
-    public void skipped() {
-        String playerName = commandLine.promptForString("skipping player name");
-        Accusation accusation = commandLine.promptForAccustation();
-
-        cardTracker.playerSkipped(playerRegistary.getPlayerId(playerName), accusation);
-    }
-
-    public void listKnownCards() {
-        for (int i = 0; i < playerRegistary.getPlayerCount(); i++) {
-            cardTracker.printKnownCardsByPlayerId(i);
         }
     }
 }

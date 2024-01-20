@@ -5,13 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public class Deck {
-    private Set<String> allCards;
-    private Set<String> allRoomCards;
-    private Set<String> allWeaponCards;
-    private Set<String> allSuspectCards;
+    private final Set<Card> allCards;
+    private final Set<Card> allRoomCards;
+    private final Set<Card> allWeaponCards;
+    private final Set<Card> allSuspectCards;
 
     public Deck() {
         this.allCards = new HashSet<>();
@@ -20,42 +22,90 @@ public class Deck {
         this.allWeaponCards = new HashSet<>();
 
         try {
-            readCardType("/en_weapons.txt", allWeaponCards);
-            readCardType("/en_suspects.txt", allSuspectCards);
-            readCardType("/en_rooms.txt", allRoomCards);
+            readCardsFromFile("/en_suspects.txt", CardType.Suspect, allSuspectCards);
+            readCardsFromFile("/en_rooms.txt", CardType.Room, allRoomCards);
+            readCardsFromFile("/en_weapons.txt", CardType.Weapon, allWeaponCards);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void readCardType(String path, Set<String> map) throws IOException {
+    private void readCardsFromFile(String path, CardType cardType, Set<Card> map) throws IOException {
         InputStream is = getClass().getResourceAsStream(path);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        String line = reader.readLine();
+        String cardName = reader.readLine();
 
-        while (line != null) {
-            line = line.toLowerCase();
-            allCards.add(line);
-            map.add(line);
-            line = reader.readLine();
+        while (cardName != null) {
+            cardName = cardName.toLowerCase();
+
+            Card newCard = new Card(cardName, cardType);
+
+            allCards.add(newCard);
+            map.add(newCard);
+            cardName = reader.readLine();
         }
     }
 
-    public boolean cardExistsByName(String card) {
+    public boolean contains(Card card) {
         return allCards.contains(card);
     }
 
-    public Set<String> getAllCards() {
+    public boolean containsCardByName(String cardName) {
+        for (Card card : allCards) {
+            if(Objects.equals(card.getCardName(), cardName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Optional<Card> getCardByName(String name) {
+        for (Card card : allCards){
+            if(Objects.equals(card.getCardName(), name)) {
+                return Optional.of(card);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public boolean contains(String cardName, CardType cardType) {
+        switch (cardType) {
+            case Suspect:
+                for (Card card : allSuspectCards) {
+                    if(Objects.equals(card.getCardName(), cardName)) {
+                        return true;
+                    }
+                }
+                break;
+            case Room:
+                for (Card card : allRoomCards) {
+                    if(Objects.equals(card.getCardName(), cardName)) {
+                        return true;
+                    }
+                }
+                break;
+            case Weapon:
+                for (Card card : allWeaponCards) {
+                    if(Objects.equals(card.getCardName(), cardName)) {
+                        return true;
+                    }
+                }
+                break;
+        }
+        return false;
+    }
+
+    public Set<Card> getAllCards() {
         return new HashSet<>(allCards);
     }
 
-    public Set<String> getAllSuspectCards() {
+    public Set<Card> getAllSuspectCards() {
         return new HashSet<>(allSuspectCards);
     }
-    public Set<String> getAllRoomCards() {
+    public Set<Card> getAllRoomCards() {
         return new HashSet<>(allRoomCards);
     }
-    public Set<String> getAllWeaponCardsCards() {
+    public Set<Card> getAllWeaponCardsCards() {
         return new HashSet<>(allWeaponCards);
     }
 
